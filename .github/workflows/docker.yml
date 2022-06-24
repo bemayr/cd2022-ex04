@@ -12,13 +12,18 @@ jobs:
     - name: Checkout 🛎️
       uses: actions/checkout@v3
 
+    - name: Declare the Short Git Commit Hash #️⃣
+      id: vars
+      shell: bash
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
     - name: Build an image from Dockerfile 🐋
-      run: docker build -t ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6} .
+      run: docker build -t bemayr/demo:${{ steps.vars.outputs.sha_short }} .
 
     - name: Run Trivy vulnerability scanner for the Docker Image 🔍[image]
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6}
+        image-ref: bemayr/demo:${{ steps.vars.outputs.sha_short }}
         format: 'sarif'
         output: 'trivy-results-image.sarif'
         exit-code: '1'
@@ -60,16 +65,16 @@ jobs:
       with:
         sarif_file: 'trivy-results-iac.sarif'
 
-    - name: Login to DockerHub
+    - name: Login to DockerHub 🔐
       uses: docker/login-action@v2
       if: github.ref == 'refs/heads/master'
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Push built Docker Image ⤴️
       uses: docker/build-push-action@v2
       if: github.ref == 'refs/heads/master'
       with:
         push: true
-        tags: ${GITHUB_REPOSITORY_OWNER}/demo:latest, ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6}
+        tags: bemayr/demo:latest, bemayr/demo:${{ steps.vars.outputs.sha_short }}
