@@ -52,21 +52,23 @@ jobs:
         sarif_file: 'trivy-results-repository.sarif'
         category: "repository"
 
-    - name: Run Trivy vulnerability scanner for IaC Files 🔍[iac]
+    - name: Run Trivy vulnerability scanner for IaC Files 🔍[infrastructure]
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'config'
         hide-progress: false
-        format: 'sarif'
-        output: 'trivy-results-iac.sarif'
+        format: 'table'
+        # format: 'sarif'
+        # output: 'trivy-results-infrastructure.sarif'
         exit-code: '1'
+        ignore-unfixed: true
         severity: 'CRITICAL,HIGH'
 
-    - name: Upload Trivy scan results to GitHub Security tab 📄[iac]
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results-iac.sarif'
-        category: "infrastucture"
+    # - name: Upload Trivy scan results to GitHub Security tab 📄[infrastructure]
+    #   uses: github/codeql-action/upload-sarif@v2
+    #   with:
+    #     sarif_file: 'trivy-results-infrastructure.sarif'
+    #     category: "infrastucture"
 
     - name: Login to DockerHub 🔐
       uses: docker/login-action@v2
