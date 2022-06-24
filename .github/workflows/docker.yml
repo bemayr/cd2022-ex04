@@ -15,22 +15,57 @@ jobs:
     - name: Build an image from Dockerfile 🐋
       run: docker build -t ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6} .
 
-    - name: Run Trivy vulnerability scanner in IaC mode 🔍
+    - name: Run Trivy vulnerability scanner for the Docker Image 🔍[image]
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6}'
-        scan-type: 'fs,config'
-        hide-progress: false
-        format: 'table'
+        image-ref: ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6}
+        format: 'sarif'
+        output: 'trivy-results-image.sarif'
         exit-code: '1'
-        ignore-unfixed: true
+        vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
 
-    - name: Upload Trivy scan results to GitHub Security tab
+    - name: Upload Trivy scan results to GitHub Security tab 📄[image]
       uses: github/codeql-action/upload-sarif@v2
-      if: always()
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: 'trivy-results-image.sarif'
+
+    - name: Run Trivy vulnerability scanner for the Repository 🔍[repository]
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        ignore-unfixed: true
+        format: 'sarif'
+        output: 'trivy-results-repository.sarif'
+        exit-code: '1'
+        severity: 'CRITICAL'
+
+    - name: Upload Trivy scan results to GitHub Security tab 📄[repository]
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results-repository.sarif'
+
+    - name: Run Trivy vulnerability scanner for IaC Files 🔍[iac]
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        hide-progress: false
+        format: 'sarif'
+        output: 'trivy-results-iac.sarif'
+        exit-code: '1'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan results to GitHub Security tab 📄[iac]
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results-iac.sarif'
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      if: github.ref == 'refs/heads/master'
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build and push
       uses: docker/build-push-action@v2
