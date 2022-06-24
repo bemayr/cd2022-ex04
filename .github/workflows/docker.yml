@@ -2,7 +2,7 @@ name: Test and Build Application
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 jobs:
@@ -31,3 +31,10 @@ jobs:
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      if: github.ref == 'refs/heads/master'
+      with:
+        push: true
+        tags: ${GITHUB_REPOSITORY_OWNER}/demo:latest, ${GITHUB_REPOSITORY_OWNER}/demo:${GITHUB_SHA::6}
