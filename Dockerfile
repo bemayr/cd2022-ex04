@@ -8,6 +8,7 @@ WORKDIR /src
 
 # Copy local file `main.go` to the working directory
 COPY main.go ./
+COPY go.mod ./
 
 # List items in the working directory (ls)
 RUN ls
