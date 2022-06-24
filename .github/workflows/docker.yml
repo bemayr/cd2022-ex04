@@ -1,4 +1,4 @@
-name: Test and Build Application
+name: Build and Push Docker Image
 
 on:
   push:
@@ -32,6 +32,7 @@ jobs:
 
     - name: Upload Trivy scan results to GitHub Security tab 📄[image]
       uses: github/codeql-action/upload-sarif@v2
+      if: always()
       with:
         sarif_file: 'trivy-results-image.sarif'
         category: "image"
@@ -48,6 +49,7 @@ jobs:
 
     - name: Upload Trivy scan results to GitHub Security tab 📄[repository]
       uses: github/codeql-action/upload-sarif@v2
+      if: always()
       with:
         sarif_file: 'trivy-results-repository.sarif'
         category: "repository"
@@ -57,7 +59,6 @@ jobs:
       with:
         scan-type: 'config'
         hide-progress: false
-        # format: 'table'
         format: 'sarif'
         output: 'trivy-results-infrastructure.sarif'
         exit-code: '1'
